@@ -1,0 +1,37 @@
+<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+  <PropertyGroup>
+    <Version>0.1.6</Version>
+    <Author>someboy</Author>
+    <Authors>someboy</Authors>
+    <Company>someboy</Company>
+    <Name>q弹狒狒</Name>
+    <AssemblyName>q弹狒狒</AssemblyName>
+    <RootNamespace>QBounce</RootNamespace>
+    <Title>q弹狒狒</Title>
+    <Product>q弹狒狒</Product>
+    <RepoUrl>https://github.com/guanyintu/q-dan-fei-fei-dalamud</RepoUrl>
+    <RepositoryUrl>https://github.com/guanyintu/q-dan-fei-fei-dalamud</RepositoryUrl>
+    <!-- Derive the version ceiling from the runtime actually used for this build. -->
+    <_RuntimeVersionFile>$(DalamudLibPath)/version.json</_RuntimeVersionFile>
+    <_SupportedGameEntry Condition="Exists('$(_RuntimeVersionFile)')">$([System.Text.RegularExpressions.Regex]::Match($([System.IO.File]::ReadAllText('$(_RuntimeVersionFile)')), '&quot;SupportedGameVer&quot;\s*:\s*&quot;[0-9.]+&quot;').Value)</_SupportedGameEntry>
+    <ApplicableVersion Condition="'$(ApplicableVersion)' == ''">$([System.Text.RegularExpressions.Regex]::Match('$(_SupportedGameEntry)', '[0-9]+(\.[0-9]+){4}').Value)</ApplicableVersion>
+    <Punchline>会让所有人变得q弹</Punchline>
+    <Description>会让所有人变得q弹</Description>
+    <Tags>animation;visual;bounce</Tags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Assets/bgm.mp3" CopyToOutputDirectory="PreserveNewest" Condition="Exists('Assets/bgm.mp3')" />
+    <Content Include="Assets/bgm-source.json" CopyToOutputDirectory="PreserveNewest" Condition="Exists('Assets/bgm-source.json')" />
+    <PackageReference Include="NAudio.Core" Version="2.2.1" />
+    <PackageReference Include="NAudio.WinMM" Version="2.2.1" />
+    <PackageReference Include="NAudio.Wasapi" Version="2.2.1" />
+  </ItemGroup>
+  <Target Name="RequireRuntimeGameVersion" BeforeTargets="BeforeBuild">
+    <Error Condition="'$(ApplicableVersion)' == ''" Text="无法读取目标 Dalamud version.json 的 SupportedGameVer；请指定有效的 DalamudLibPath。" />
+  </Target>
+</Project>

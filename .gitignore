@@ -1,0 +1,6 @@
+.tools/
+dist/
+**/bin/
+**/obj/
+**/TestResults/
+*.user

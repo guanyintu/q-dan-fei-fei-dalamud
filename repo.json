@@ -1,0 +1,27 @@
+[
+  {
+    "Author": "someboy",
+    "Name": "q弹狒狒",
+    "InternalName": "q弹狒狒",
+    "AssemblyVersion": "0.1.6.0",
+    "Description": "会让所有人变得q弹",
+    "ApplicableVersion": "2026.11.03.0000.0000",
+    "RepoUrl": "https://github.com/guanyintu/q-dan-fei-fei-dalamud",
+    "Tags": [
+      "animation",
+      "visual",
+      "bounce"
+    ],
+    "DalamudApiLevel": 15,
+    "LoadRequiredState": 0,
+    "LoadSync": false,
+    "CanUnloadAsync": false,
+    "LoadPriority": 0,
+    "Punchline": "会让所有人变得q弹",
+    "AcceptsFeedback": true,
+    "DownloadLinkInstall": "https://github.com/guanyintu/q-dan-fei-fei-dalamud/releases/download/v0.1.6/q%E5%BC%B9%E7%8B%92%E7%8B%92-%E5%8D%AB%E6%9C%88%E7%89%88-0.1.6.zip",
+    "DownloadLinkUpdate": "https://github.com/guanyintu/q-dan-fei-fei-dalamud/releases/download/v0.1.6/q%E5%BC%B9%E7%8B%92%E7%8B%92-%E5%8D%AB%E6%9C%88%E7%89%88-0.1.6.zip",
+    "DownloadLinkTesting": "https://github.com/guanyintu/q-dan-fei-fei-dalamud/releases/download/v0.1.6/q%E5%BC%B9%E7%8B%92%E7%8B%92-%E5%8D%AB%E6%9C%88%E7%89%88-0.1.6.zip",
+    "LastUpdate": 1794495098
+  }
+]
