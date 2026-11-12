@@ -24,6 +24,8 @@ https://raw.githubusercontent.com/guanyintu/q-dan-fei-fei-dalamud/main/repo.json
 
 手动开发插件加载方式：
 
+GitHub Release 中使用中文显示名称，实际附件下载名为拼音；解压 ZIP 后主文件为 `q弹狒狒.dll`。
+
 1. 从 Releases 下载 `q弹狒狒-卫月版-0.1.6.zip`，解压到独立目录，保留三个 `NAudio.*.dll` 及 `Assets` 音乐目录。无需复制 Dalamud 或 FFXIVClientStructs DLL。
 2. 通过卫月启动游戏。输入 `/xlsettings`，在“实验性 / Experimental → Dev Plugin Locations”添加解压后的 **q弹狒狒.dll 完整路径**，启用并保存；必要时在 `/xlplugins` 扫描开发插件／重新启动游戏。
 3. 输入 `/qbounce`，勾选“Q 弹总开关”。默认强度 **0.4**、周期 **0.45 秒**、所有范围开启且相位同步。
