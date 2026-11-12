@@ -12,7 +12,9 @@ public sealed class AudioService(Func<string, IAudioPlayback> open, Action<Excep
 {
     private IAudioPlayback? playback;
     private bool disposed;
-    public string Status { get; private set; } = "已停止";
+    private TextId status = TextId.MusicStopped;
+    public string Status => GetStatus(DisplayLanguage.SimplifiedChinese);
+    internal string GetStatus(DisplayLanguage language) => Localization.Get(status, language);
 
     public static string ResolvePath(string? selectedPath, string configDefault, string bundledDefault)
     {
@@ -32,19 +34,19 @@ public sealed class AudioService(Func<string, IAudioPlayback> open, Action<Excep
         if (disposed) return;
         try
         {
-            if (!File.Exists(path)) { Status = "未找到音乐文件，Q 弹继续运行"; return; }
+            if (!File.Exists(path)) { status = TextId.MusicMissing; return; }
             var extension = Path.GetExtension(path);
             if (!extension.Equals(".mp3", StringComparison.OrdinalIgnoreCase) &&
                 !extension.Equals(".wav", StringComparison.OrdinalIgnoreCase))
                 throw new NotSupportedException("请选择 MP3 或 WAV 文件。");
             playback = open(path);
             SetVolume(volume, muted);
-            Status = "已准备";
+            status = TextId.MusicReady;
         }
         catch (Exception ex)
         {
             Stop();
-            Status = "音乐不可用，Q 弹继续运行";
+            status = TextId.MusicUnavailable;
             report(ex);
         }
     }
@@ -52,8 +54,8 @@ public sealed class AudioService(Func<string, IAudioPlayback> open, Action<Excep
     public void PlayPrepared()
     {
         if (playback == null || disposed) return;
-        try { playback.Play(); Status = "循环播放"; }
-        catch (Exception ex) { Stop(); Status = "音乐不可用，Q 弹继续运行"; report(ex); }
+        try { playback.Play(); status = TextId.MusicLooping; }
+        catch (Exception ex) { Stop(); status = TextId.MusicUnavailable; report(ex); }
     }
 
     public void SetVolume(float volume, bool muted)
@@ -61,7 +63,7 @@ public sealed class AudioService(Func<string, IAudioPlayback> open, Action<Excep
         if (playback?.Error is { } error)
         {
             Stop();
-            Status = "音频设备中断，Q 弹继续运行";
+            status = TextId.AudioInterrupted;
             report(error);
             return;
         }
@@ -82,7 +84,7 @@ public sealed class AudioService(Func<string, IAudioPlayback> open, Action<Excep
                 catch (Exception ex) { report(ex); }
             }
         }
-        Status = "已停止";
+        status = TextId.MusicStopped;
     }
 
     public void Dispose() { if (disposed) return; Stop(); disposed = true; }

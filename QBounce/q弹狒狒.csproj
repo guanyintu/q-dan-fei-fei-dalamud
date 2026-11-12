@@ -1,6 +1,6 @@
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
   <PropertyGroup>
-    <Version>0.1.6</Version>
+    <Version>0.1.7</Version>
     <Author>someboy</Author>
     <Authors>someboy</Authors>
     <Company>someboy</Company>
@@ -27,6 +27,12 @@
   <ItemGroup>
     <Content Include="Assets/bgm.mp3" CopyToOutputDirectory="PreserveNewest" Condition="Exists('Assets/bgm.mp3')" />
     <Content Include="Assets/bgm-source.json" CopyToOutputDirectory="PreserveNewest" Condition="Exists('Assets/bgm-source.json')" />
+    <Content Include="../README.md" Link="README.md" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../README.en.md" Link="README.en.md" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../README.zh-TW.md" Link="README.zh-TW.md" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../THIRD-PARTY-NOTICES.md" Link="THIRD-PARTY-NOTICES.md" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../docs/VALIDATION.md" Link="docs/VALIDATION.md" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../docs/TECHNICAL-NOTES.md" Link="docs/TECHNICAL-NOTES.md" CopyToOutputDirectory="PreserveNewest" />
     <PackageReference Include="NAudio.Core" Version="2.2.1" />
     <PackageReference Include="NAudio.WinMM" Version="2.2.1" />
     <PackageReference Include="NAudio.Wasapi" Version="2.2.1" />

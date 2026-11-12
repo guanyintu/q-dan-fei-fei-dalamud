@@ -36,5 +36,6 @@ FF14 世界坐标以 Y 为高度、XZ 为地面平面；模型缩放仍沿模型
 
 0.1.5 按用户要求取消额外音频压缩和自动解压。发布包直接携带 MP3；音频路径仍按用户选择、配置默认、随包默认的顺序解析，直接由现有音频服务读取。没有新增编解码器或 NuGet 依赖，也不会覆盖已有用户音乐。
 
-[参考 MOD 页面](https://patch-ali.gamehub.homes/showpatch/320889.html)没有指明 BGM。发布者指定的音乐出处为 [Bilibili BV1hXbN6VEKV](https://www.bilibili.com/video/BV1hXbN6VEKV/)，并已确认公开分发授权；内置 MP3 可从界面更换。插件本身不集成下载器，不访问视频站点。NAudio 依据其 [MIT 许可证](https://github.com/naudio/NAudio/blob/v2.2.1/license.txt) 使用。
+[参考 MOD 页面](https://patch-ali.gamehub.homes/showpatch/320889.html)没有指明 BGM。发布者指定的音乐出处为 [Bilibili BV1VGYR6bECg](https://www.bilibili.com/video/BV1VGYR6bECg/)，并已确认公开分发授权；内置 MP3 可从界面更换。插件本身不集成下载器，不访问视频站点。NAudio 依据其 [MIT 许可证](https://github.com/naudio/NAudio/blob/v2.2.1/license.txt) 使用。
+
 

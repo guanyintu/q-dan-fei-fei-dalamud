@@ -28,6 +28,7 @@ THE SOFTWARE.
 Dalamud and FFXIVClientStructs are supplied by the user's launcher; their binaries are not included.
 
 Music attribution, as specified by the publisher:
-https://www.bilibili.com/video/BV1hXbN6VEKV/
+https://www.bilibili.com/video/BV1VGYR6bECg/
 The publisher confirmed permission for public redistribution on 2026-11-12.
 Third-party music is not covered by the source code's licensing terms.
+

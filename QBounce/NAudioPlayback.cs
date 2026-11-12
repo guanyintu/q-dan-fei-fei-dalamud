@@ -8,6 +8,7 @@ internal sealed class NAudioPlayback : IAudioPlayback
 {
     private readonly WaveStream reader;
     private readonly WaveOutEvent output;
+    private readonly LoopStream loop;
     private readonly VolumeSampleProvider volume;
     public Exception? Error { get; private set; }
     internal PlaybackState State => output.PlaybackState;
@@ -18,20 +19,23 @@ internal sealed class NAudioPlayback : IAudioPlayback
         reader = Path.GetExtension(path).Equals(".wav", StringComparison.OrdinalIgnoreCase)
             ? new WaveFileReader(path) : new MediaFoundationReader(path);
         output = new WaveOutEvent { DesiredLatency = 100, NumberOfBuffers = 3 };
+        loop = new LoopStream(reader);
         output.PlaybackStopped += (_, args) => { if (args.Exception != null) Error = args.Exception; };
         try
         {
-            volume = new VolumeSampleProvider(new LoopStream(reader).ToSampleProvider());
+            volume = new VolumeSampleProvider(loop.ToSampleProvider());
             output.Init(volume.ToWaveProvider());
         }
-        catch { output.Dispose(); reader.Dispose(); throw; }
+        catch { loop.Dispose(); try { output.Dispose(); } finally { reader.Dispose(); } throw; }
     }
 
     public void Play() => output.Play();
     public void Stop() => output.Stop();
     public void Dispose()
     {
-        // Output must finish reading before its decoder is disposed.
+        // WaveOutEvent.Stop does not join its worker. Close the read gate first so a late
+        // callback cannot recreate MediaFoundationReader's native reader after disposal.
+        loop.Dispose();
         try { output.Dispose(); }
         finally { reader.Dispose(); }
     }
@@ -39,10 +43,16 @@ internal sealed class NAudioPlayback : IAudioPlayback
 
 public sealed class LoopStream(WaveStream source) : WaveStream
 {
+    private readonly object readGate = new();
+    private bool closed;
     public override WaveFormat WaveFormat => source.WaveFormat;
     public override long Length => source.Length;
     public override long Position { get => source.Position; set => source.Position = value; }
     public override int Read(byte[] buffer, int offset, int count)
+    {
+        lock (readGate) return closed ? 0 : ReadOpen(buffer, offset, count);
+    }
+    private int ReadOpen(byte[] buffer, int offset, int count)
     {
         var total = 0;
         var rewoundWithoutData = false;
@@ -61,5 +71,10 @@ public sealed class LoopStream(WaveStream source) : WaveStream
         }
         return total;
     }
-    // The owner owns source; this adapter deliberately doesn't dispose it.
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing) lock (readGate) closed = true;
+        base.Dispose(disposing);
+    }
+    // The owner owns source; closing this adapter prevents further reads without disposing it.
 }

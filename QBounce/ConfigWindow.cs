@@ -11,48 +11,55 @@ internal sealed class ConfigWindow(Plugin plugin) : Window("q弹狒狒###QBounce
     public override void Draw()
     {
         var c = plugin.Config;
+        var language = plugin.Language;
+        string T(TextId key) => Localization.Get(key, language);
         var changed = false;
-        ImGui.TextDisabled("作者：someboy · 本项目主要由 Codex 生成");
-        ImGui.Checkbox("Q 弹总开关", ref plugin.Enabled);
-        changed |= ImGui.SliderFloat("强度", ref c.Amplitude, 0, .6f, "%.2f");
-        changed |= ImGui.SliderFloat("周期（秒）", ref c.Period, .2f, 1.5f, "%.2f");
-        changed |= ImGui.Checkbox("随机相位（关闭为同步）", ref c.RandomPhase);
+        ImGui.TextDisabled(T(TextId.Credits));
+        var selection = Array.IndexOf(Localization.Preferences, c.UiLanguage);
+        if (ImGui.Combo(T(TextId.Language) + "###UiLanguage", ref selection, Localization.LanguageOptions))
+        {
+            c.UiLanguage = Localization.Preferences[selection]; changed = true;
+        }
+        ImGui.Checkbox(T(TextId.Enable), ref plugin.Enabled);
+        changed |= ImGui.SliderFloat(T(TextId.Amplitude), ref c.Amplitude, 0, .6f, "%.2f");
+        changed |= ImGui.SliderFloat(T(TextId.Period), ref c.Period, .2f, 1.5f, "%.2f");
+        changed |= ImGui.Checkbox(T(TextId.RandomPhase), ref c.RandomPhase);
         ImGui.Separator();
-        ImGui.TextUnformatted("角色范围");
-        changed |= ImGui.Checkbox("自己", ref c.AffectSelf);
-        ImGui.SameLine(); changed |= ImGui.Checkbox("其他玩家", ref c.AffectPlayers);
-        changed |= ImGui.Checkbox("NPC", ref c.AffectNpcs);
-        ImGui.SameLine(); changed |= ImGui.Checkbox("怪物 / BOSS", ref c.AffectMonsters);
+        ImGui.TextUnformatted(T(TextId.Scope));
+        changed |= ImGui.Checkbox(T(TextId.Self), ref c.AffectSelf);
+        ImGui.SameLine(); changed |= ImGui.Checkbox(T(TextId.Players), ref c.AffectPlayers);
+        changed |= ImGui.Checkbox(T(TextId.Npcs), ref c.AffectNpcs);
+        ImGui.SameLine(); changed |= ImGui.Checkbox(T(TextId.Monsters), ref c.AffectMonsters);
         ImGui.Separator();
-        if (ImGui.Checkbox("BGM", ref c.BgmEnabled)) { plugin.AudioChanged = true; changed = true; }
-        changed |= ImGui.Checkbox("静音", ref c.Muted);
-        changed |= ImGui.SliderFloat("音量", ref c.Volume, 0, 1, "%.2f");
-        if (ImGui.InputText("音频路径", ref c.AudioPath, 2048)) changed = true;
-        if (ImGui.Button("选择 MP3 / WAV"))
-            files.OpenFileDialog("选择本地音乐", "音频{.mp3,.wav}", (ok, path) =>
+        if (ImGui.Checkbox(T(TextId.Bgm), ref c.BgmEnabled)) { plugin.AudioChanged = true; changed = true; }
+        changed |= ImGui.Checkbox(T(TextId.Mute), ref c.Muted);
+        changed |= ImGui.SliderFloat(T(TextId.Volume), ref c.Volume, 0, 1, "%.2f");
+        if (ImGui.InputText(T(TextId.AudioPath), ref c.AudioPath, 2048)) changed = true;
+        if (ImGui.Button(T(TextId.BrowseMusic)))
+            files.OpenFileDialog(T(TextId.SelectMusic), T(TextId.AudioFilter), (ok, path) =>
             {
                 if (!ok) return;
                 c.AudioPath = path; plugin.AudioChanged = true; plugin.Save();
             });
         ImGui.SameLine();
-        if (ImGui.Button("应用音乐 / 重置节奏")) plugin.ResetRequested = true;
-        ImGui.TextWrapped("当前音乐：" + plugin.CurrentAudioPath);
-        ImGui.TextWrapped("路径留空使用默认音乐，可随时选择其他 MP3 / WAV。");
-        ImGui.TextWrapped("音乐出处：https://www.bilibili.com/video/BV1hXbN6VEKV/");
-        ImGui.TextWrapped("音乐：" + plugin.MusicStatus);
+        if (ImGui.Button(T(TextId.ResetMusic))) plugin.ResetRequested = true;
+        ImGui.TextWrapped(T(TextId.CurrentMusic) + plugin.CurrentAudioPath);
+        ImGui.TextWrapped(T(TextId.MusicHint));
+        ImGui.TextWrapped(T(TextId.MusicSource) + "https://www.bilibili.com/video/BV1VGYR6bECg/");
+        ImGui.TextWrapped(T(TextId.MusicStatus) + plugin.MusicStatus);
         ImGui.Separator();
-        changed |= ImGui.Checkbox("启用 F6 / F7 / F8 快捷键", ref c.HotkeysEnabled);
-        ImGui.TextWrapped("F6 开关 · F7 强度档位 · F8 从头重置。默认禁用；启用后仍会触发游戏原有绑定。输入文字或后台时忽略。");
-        ImGui.TextUnformatted($"已处理 {plugin.ProcessedCount} / 跟踪 {plugin.TrackedCount} · 更新入口 {plugin.HookCount}");
-        ImGui.TextWrapped("状态：" + plugin.Status);
-        ImGui.TextWrapped("最近错误：" + plugin.LastError);
-        ImGui.TextWrapped("过场和 GPose 自动暂停。切图后自动重新发现对象。");
+        changed |= ImGui.Checkbox(T(TextId.Hotkeys), ref c.HotkeysEnabled);
+        ImGui.TextWrapped(T(TextId.HotkeyHint));
+        ImGui.TextWrapped(Localization.Format(TextId.Counts, language, plugin.ProcessedCount, plugin.TrackedCount, plugin.HookCount));
+        ImGui.TextWrapped(T(TextId.Status) + plugin.Status);
+        ImGui.TextWrapped(T(TextId.LastError) + plugin.LastError);
+        ImGui.TextWrapped(T(TextId.SceneHint));
         if (changed) plugin.Save();
     }
 
     public override void PreDraw()
     {
-        ImGui.SetNextWindowSize(new Vector2(460, 630), ImGuiCond.FirstUseEver);
+        ImGui.SetNextWindowSize(new Vector2(520, 700), ImGuiCond.FirstUseEver);
         ImGui.SetNextWindowSizeConstraints(new Vector2(360, 440), new Vector2(900, 1000));
     }
     public void DrawFileDialog() => files.Draw();

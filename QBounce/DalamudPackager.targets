@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <_MakeReleaseZip>false</_MakeReleaseZip>
+    <_MakeReleaseZip Condition="'$(Configuration)' == 'Release'">true</_MakeReleaseZip>
+  </PropertyGroup>
+  <!-- The official task owns both the manifest and latest.zip. Explicit inputs prevent
+       old output directories, SDK/game libraries, or other archives from being included. -->
+  <Target Name="PackagePlugin" AfterTargets="Build">
+    <DalamudPackager ProjectDir="$(ProjectDir)"
+                    OutputPath="$(OutputPath)"
+                    AssemblyName="$(AssemblyName)"
+                    ManifestType="csproj"
+                    MakeZip="$(_MakeReleaseZip)"
+                    Include="$(AssemblyName).dll;$(AssemblyName).json;$(AssemblyName).deps.json;NAudio.Core.dll;NAudio.WinMM.dll;NAudio.Wasapi.dll;Assets/bgm.mp3;Assets/bgm-source.json;README.md;README.en.md;README.zh-TW.md;THIRD-PARTY-NOTICES.md;docs/VALIDATION.md;docs/TECHNICAL-NOTES.md"
+                    Author="$(Author)" Name="$(Name)"
+                    MinimumDalamudVersion="$(MinimumDalamudVersion)"
+                    Punchline="$(Punchline)" Description="$(Description)"
+                    ApplicableVersion="$(ApplicableVersion)" RepoUrl="$(RepoUrl)"
+                    Tags="$(Tags)" CategoryTags="$(CategoryTags)"
+                    DalamudApiLevel="$(DalamudApiLevel)"
+                    LoadRequiredState="$(LoadRequiredState)" LoadSync="$(LoadSync)"
+                    CanUnloadAsync="$(CanUnloadAsync)" LoadPriority="$(LoadPriority)"
+                    ImageUrls="$(ImageUrls)" IconUrl="$(IconUrl)"
+                    Changelog="$(Changelog)" AcceptsFeedback="$(AcceptsFeedback)"
+                    FeedbackMessage="$(FeedbackMessage)" />
+  </Target>
+</Project>

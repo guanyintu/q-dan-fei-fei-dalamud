@@ -30,12 +30,32 @@ public sealed class Plugin : IDalamudPlugin
     internal bool ResetRequested;
     internal bool AudioChanged;
     internal bool InputCaptured;
-    internal string Status { get; private set; } = "已关闭";
-    internal string LastError { get; private set; } = "无";
+    private TextId status = TextId.Disabled;
+    private string? errorMessage, restoreMessage;
+    private bool isAudioError;
+    private string? cachedPreference, cachedHostLanguage;
+    private DisplayLanguage cachedLanguage;
+    internal DisplayLanguage Language
+    {
+        get
+        {
+            var preference = Config.UiLanguage; var host = PluginInterface.UiLanguage;
+            if (preference != cachedPreference || host != cachedHostLanguage)
+            {
+                cachedLanguage = Localization.Resolve(preference, host);
+                cachedPreference = preference; cachedHostLanguage = host;
+            }
+            return cachedLanguage;
+        }
+    }
+    internal string Status => Localization.Get(status, Language);
+    internal string LastError => errorMessage == null ? Localization.Get(TextId.None, Language) :
+        (isAudioError ? Localization.Get(TextId.AudioPrefix, Language) : "") + errorMessage +
+        (restoreMessage == null ? "" : Localization.Get(TextId.RestoreFailed, Language) + restoreMessage);
     internal int ProcessedCount => actors.ProcessedCount;
     internal int TrackedCount => actors.TrackedCount;
     internal int HookCount => hooks.Count;
-    internal string MusicStatus => audio.Status;
+    internal string MusicStatus => audio.GetStatus(Language);
     internal string DefaultAudioPath { get; }
     private readonly string bundledAudioPath;
     internal string CurrentAudioPath => AudioService.ResolvePath(Config.AudioPath, DefaultAudioPath, bundledAudioPath);
@@ -46,6 +66,8 @@ public sealed class Plugin : IDalamudPlugin
     private readonly ActorUpdateHooks hooks;
     private readonly AudioService audio;
     private readonly Action<ActorSnapshot> ensureHook;
+    private readonly CommandInfo commandInfo;
+    private DisplayLanguage? commandLanguage;
     private long epoch;
     private long lastDiagnostic;
     private bool running;
@@ -66,7 +88,9 @@ public sealed class Plugin : IDalamudPlugin
         audio = new AudioService(path => new NAudioPlayback(path), ReportAudioError);
         window = new ConfigWindow(this);
         windows.AddWindow(window);
-        Commands.AddHandler("/qbounce", new CommandInfo(OnCommand) { HelpMessage = "打开 q弹狒狒 配置；off 立即关闭。" });
+        commandInfo = new CommandInfo(OnCommand);
+        RefreshLanguage();
+        Commands.AddHandler("/qbounce", commandInfo);
         Framework.Update += OnUpdate;
         Client.TerritoryChanged += OnTerritoryChanged;
         Client.Logout += OnLogout;
@@ -75,7 +99,14 @@ public sealed class Plugin : IDalamudPlugin
         PluginInterface.UiBuilder.OpenMainUi += ToggleWindow;
     }
 
-    internal void Save() => PluginInterface.SavePluginConfig(Config);
+    internal void Save() { Config.Normalize(); RefreshLanguage(); PluginInterface.SavePluginConfig(Config); }
+    private void RefreshLanguage()
+    {
+        var language = Language;
+        if (commandLanguage == language) return;
+        commandInfo.HelpMessage = Localization.Get(TextId.CommandHelp, language);
+        commandLanguage = language;
+    }
     private void OnCommand(string command, string args)
     {
         if (args.Trim().Equals("off", StringComparison.OrdinalIgnoreCase)) Enabled = false;
@@ -84,6 +115,7 @@ public sealed class Plugin : IDalamudPlugin
     private void ToggleWindow() => window.Toggle();
     private void Draw()
     {
+        RefreshLanguage();
         windows.Draw();
         window.DrawFileDialog();
         InputCaptured = Dalamud.Bindings.ImGui.ImGui.GetIO().WantCaptureKeyboard;
@@ -105,7 +137,7 @@ public sealed class Plugin : IDalamudPlugin
             if (!Enabled || !available)
             {
                 if (running) StopEffect();
-                Status = Enabled ? "场景暂停（切图／过场／GPose／未登录）" : "已关闭";
+                status = Enabled ? TextId.ScenePaused : TextId.Disabled;
                 return;
             }
             if (!running || ResetRequested)
@@ -125,7 +157,7 @@ public sealed class Plugin : IDalamudPlugin
             var elapsed = Stopwatch.GetElapsedTime(epoch).TotalSeconds;
             actors.BeginFrame(elapsed, Config.Settings, ensureHook);
             hooks.Active = true;
-            Status = "运行中";
+            status = TextId.Running;
         }
         catch (Exception ex) { PauseOnError(ex); }
     }
@@ -163,7 +195,7 @@ public sealed class Plugin : IDalamudPlugin
 
     private void ReportAudioError(Exception ex)
     {
-        LastError = "音频：" + ex.Message;
+        errorMessage = ex.Message; isAudioError = true; restoreMessage = null;
         Log.Warning(ex, "BGM unavailable");
     }
     private void PauseOnError(Exception ex)
@@ -171,12 +203,12 @@ public sealed class Plugin : IDalamudPlugin
         Enabled = false;
         hooks.Active = false;
         running = false;
-        LastError = ex.Message;
-        Status = "错误已自动关闭；可重新启用";
+        errorMessage = ex.Message; isAudioError = false; restoreMessage = null;
+        status = TextId.ErrorStopped;
         Log.Error(ex, "QBounce paused");
         audio.Stop();
         try { actors.RestoreAndClear(); }
-        catch (Exception restore) { LastError += "；恢复失败，请切图或重新登录：" + restore.Message; Log.Error(restore, "Restore failed"); }
+        catch (Exception restore) { restoreMessage = restore.Message; Log.Error(restore, "Restore failed"); }
     }
 
     private unsafe void UpdateKeys()

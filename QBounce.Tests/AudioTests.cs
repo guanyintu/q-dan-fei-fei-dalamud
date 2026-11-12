@@ -88,6 +88,16 @@ public sealed class AudioTests
         Assert.Equal(0, loop.Read(new byte[100], 0, 100));
     }
 
+    [Fact]
+    public void LateAudioCallbackCannotReadOrReopenDecoderAfterLoopDisposal()
+    {
+        using var source = new RawSource([1, 2, 3, 4]);
+        var loop = new LoopStream(source);
+        loop.Dispose();
+        Assert.Equal(0, loop.Read(new byte[16], 0, 16));
+        Assert.Equal(0, source.Position);
+    }
+
     private sealed class RawSource(byte[] data) : WaveStream
     {
         public override WaveFormat WaveFormat => new(44100, 16, 1);

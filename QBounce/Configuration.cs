@@ -19,6 +19,7 @@ public sealed class Configuration : IPluginConfiguration
     public float Volume = .35f;
     public string AudioPath = "";
     public bool HotkeysEnabled;
+    public string UiLanguage = "auto";
 
     public void Normalize()
     {
@@ -26,6 +27,7 @@ public sealed class Configuration : IPluginConfiguration
         Period = float.IsFinite(Period) ? Math.Clamp(Period, .2f, 1.5f) : .45f;
         Volume = float.IsFinite(Volume) ? Math.Clamp(Volume, 0, 1) : .35f;
         AudioPath ??= "";
+        UiLanguage = Localization.NormalizePreference(UiLanguage);
     }
 
     public BounceSettings Settings => new(Amplitude, Period, RandomPhase, AffectSelf, AffectPlayers, AffectNpcs, AffectMonsters);

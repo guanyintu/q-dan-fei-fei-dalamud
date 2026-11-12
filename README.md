@@ -1,5 +1,7 @@
 # q弹狒狒
 
+[简体中文](README.md) · [繁體中文](README.zh-TW.md) · [English](README.en.md)
+
 会让所有人变得q弹
 
 作者：**someboy**。这是卫月（Dalamud）版本，作用于当前加载的玩家、NPC、怪物／BOSS，并支持循环 BGM。默认关闭效果。
@@ -10,9 +12,19 @@
 
 **卫月版会更流畅一些，已有卫月建议优先使用本版本。** [独立版](https://github.com/guanyintu/q-dan-fei-fei-standalone/releases/latest) 无需卫月，下载 EXE 即可运行。
 
-**构建已通过；完整模型效果验收仍见测试报告。** 当前版本 **0.1.6** 针对国服 Dalamud **15.0.4.0 / API 15 / .NET 10**，游戏版本 **2026.11.03.0000.0000**。构建时从实际引用的 Dalamud `version.json` 生成 manifest 适用版本，并检查清单与目标运行时一致；不会使用 `any` 跳过版本限制。
+**构建已通过；完整模型效果验收仍见测试报告。** 当前版本 **0.1.7** 针对国服 Dalamud **15.0.4.0 / API 15 / .NET 10**，游戏版本 **2026.11.03.0000.0000**。构建时从实际引用的 Dalamud `version.json` 生成 manifest 适用版本，并检查清单与目标运行时一致；不会使用 `any` 跳过版本限制。
 
 0.1.6 将项目名、主文件和界面名称统一为“q弹狒狒”，作者为 someboy。0.1.1 修复版本上限导致的加载失败，0.1.2 修复场景父节点过滤，0.1.3 加入默认音乐，0.1.5 取消额外音频压缩。
+
+## 界面语言
+
+支持简体中文、繁體中文和 English。默认跟随卫月界面语言，其他语言回退为英文；可在界面顶部手动切换并保存。设置项、选曲窗口、运行状态、音乐状态与命令帮助已翻译，系统及原生异常保留原始信息。切换语言不会重置 Q 弹或重新播放音乐。
+
+## 发布格式
+
+使用 [官方 DalamudPackager](https://github.com/goatcorp/DalamudPackager) 直接生成 `latest.zip` 与 `q弹狒狒.json`。项目内 `DalamudPackager.targets` 用官方支持的 `Include` 指定运行文件；`build.ps1` 只校验并复制这两个原始产物，保持字节一致，不再手工压缩 ZIP。`repo.json` 的下载地址由生成清单派生，指向对应版本的 `latest.zip`。
+
+0.1.7 新增三种界面语言，修复停止音频后迟到的回调可能重新打开解码器的问题，并将两版默认音乐统一为 [BV1VGYR6bECg](https://www.bilibili.com/video/BV1VGYR6bECg/)。
 
 ## 加载
 
@@ -24,19 +36,19 @@ https://raw.githubusercontent.com/guanyintu/q-dan-fei-fei-dalamud/main/repo.json
 
 手动开发插件加载方式：
 
-GitHub Release 中使用中文显示名称，实际附件下载名为拼音；解压 ZIP 后主文件为 `q弹狒狒.dll`。
+下载官方 Packager 原生生成的 `latest.zip`，解压后主文件为 `q弹狒狒.dll`。独立清单的显示名称为 `q弹狒狒.json`，GitHub 附件下载名为 `manifest.json`。
 
-1. 从 Releases 下载 `q弹狒狒-卫月版-0.1.6.zip`，解压到独立目录，保留三个 `NAudio.*.dll` 及 `Assets` 音乐目录。无需复制 Dalamud 或 FFXIVClientStructs DLL。
+1. 从 Releases 下载 `latest.zip`，解压到独立目录，保留三个 `NAudio.*.dll` 及 `Assets` 音乐目录。无需复制 Dalamud 或 FFXIVClientStructs DLL。
 2. 通过卫月启动游戏。输入 `/xlsettings`，在“实验性 / Experimental → Dev Plugin Locations”添加解压后的 **q弹狒狒.dll 完整路径**，启用并保存；必要时在 `/xlplugins` 扫描开发插件／重新启动游戏。
 3. 输入 `/qbounce`，勾选“Q 弹总开关”。默认强度 **0.4**、周期 **0.45 秒**、所有范围开启且相位同步。
 4. 关闭总开关，或输入 `/qbounce off`，撤回本插件的缩放。重新加载插件后仍默认关闭。
 
-自行构建后可添加 `dist/q弹狒狒-卫月版/q弹狒狒.dll` 的绝对路径。不要从 ZIP 内直接加载，也不要只复制主 DLL。旧版 QBounce 用户需先停用旧版，再添加新 DLL；设置目录会随内部名称变更，默认效果仍关闭。
+自行构建后可添加 `QBounce/bin/Release/q弹狒狒.dll` 的绝对路径。不要从 ZIP 内直接加载，也不要只复制主 DLL。旧版 QBounce 用户需先停用旧版，再添加新 DLL；设置目录会随内部名称变更，默认效果仍关闭。
 
 ## 音乐与快捷键
 
-- **音乐出处：[Bilibili BV1hXbN6VEKV](https://www.bilibili.com/video/BV1hXbN6VEKV/)**。内置 MP3 约 42 分 54 秒，发布者已确认公开分发授权。插件运行时不连接 Bilibili、不下载音乐。
-- 发布包直接携带 `Assets/bgm.mp3`（61,769,971 字节，约 61.8 MB），直接播放，无额外音频压缩或首次加载解压步骤。
+- **音乐出处：[Bilibili BV1VGYR6bECg](https://www.bilibili.com/video/BV1VGYR6bECg/)**。内置 MP3 约 3 分 7 秒，发布者已确认公开分发授权。插件运行时不连接 Bilibili、不下载音乐。
+- 发布包直接携带 `Assets/bgm.mp3`（4,497,035 字节，约 4.50 MB），直接播放，无额外音频压缩或首次加载解压步骤。
 - 选曲优先级：界面所选路径 → 配置目录 `bgm.mp3` → 随包的 `Assets/bgm.mp3`。配置默认文件通常为 `%APPDATA%\XIVLauncherCN\pluginConfigs\q弹狒狒\bgm.mp3`；界面显示实际使用路径。
 - 可选择其他本地 MP3 或 PCM／IEEE-float WAV，或粘贴路径后点击“应用音乐 / 重置节奏”。清空路径恢复默认。构建工具及视频下载器不随插件运行，也不作为插件依赖。
 - 开启效果即播放并循环，关闭或卸载即停止释放；静音与音量实时生效。音乐缺失、解码失败或设备错误不会阻止 Q 弹。
@@ -65,6 +77,8 @@ IFramework.Update 负责共享 Stopwatch 时钟、恢复与对象管理；由于
 ./build.ps1 -DalamudPath "$env:APPDATA\XIVLauncherCN\addon\Hooks\15.0.4.0"
 ```
 
-脚本优先使用本工作区 `.tools/dotnet/dotnet.exe`（如存在），其次使用系统 SDK；NuGet 版本已锁定。未指定 DalamudPath 时，优先使用 DALAMUD_HOME，否则自动选择已安装的最新 API 15 运行时。自动构建、检查目标版本、运行测试并打包到 `dist`；可用 `-GameVersionFile` 指定游戏安装目录中的 `ffxivgame.ver`，同时核验实际游戏版本。测试包括无游戏依赖的数学／生命周期、使用本机结构 DLL 的自有原生内存夹具，以及 Windows 音频设备的静音 WAV／MP3 播放测试；后者需要 Windows 音频输出与 Media Foundation 编解码器。
+脚本优先使用本工作区 `.tools/dotnet/dotnet.exe`（如存在），其次使用系统 SDK；NuGet 版本已锁定。未指定 DalamudPath 时，优先使用 DALAMUD_HOME，否则自动选择已安装的最新 API 15 运行时。自动构建、检查目标版本、运行测试，并原样复制官方 Packager 产物到 `dist/q弹狒狒-卫月版-0.1.7/`；可用 `-GameVersionFile` 指定游戏安装目录中的 `ffxivgame.ver`，同时核验实际游戏版本。测试包括无游戏依赖的数学／生命周期、使用本机结构 DLL 的自有原生内存夹具，以及 Windows 音频设备的静音 WAV／MP3 播放测试；后者需要 Windows 音频输出与 Media Foundation 编解码器。
 
-本次 Release 构建 0 warning / 0 error，44 项测试通过、0 失败、0 跳过。结果见 [验收报告](docs/VALIDATION.md)，结构版本与时序依据见 [技术核查](docs/TECHNICAL-NOTES.md)。**编译成功、内存夹具测试通过和音乐设备测试通过均不代表所有游戏内模型效果已验证。**
+本次 Release 构建 0 warning / 0 error，59 项测试通过、0 失败、0 跳过。结果见 [验收报告](docs/VALIDATION.md)，结构版本与时序依据见 [技术核查](docs/TECHNICAL-NOTES.md)。**编译成功、内存夹具测试通过和音乐设备测试通过均不代表所有游戏内模型效果已验证。**
+
+
