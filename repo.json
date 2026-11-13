@@ -3,7 +3,7 @@
     "Author": "someboy",
     "Name": "q弹狒狒",
     "InternalName": "q弹狒狒",
-    "AssemblyVersion": "0.1.7.0",
+    "AssemblyVersion": "0.1.8.0",
     "Description": "会让所有人变得q弹",
     "ApplicableVersion": "2026.11.03.0000.0000",
     "RepoUrl": "https://github.com/guanyintu/q-dan-fei-fei-dalamud",
@@ -19,9 +19,9 @@
     "LoadPriority": 0,
     "Punchline": "会让所有人变得q弹",
     "AcceptsFeedback": true,
-    "DownloadLinkInstall": "https://github.com/guanyintu/q-dan-fei-fei-dalamud/releases/download/v0.1.7/latest.zip",
-    "DownloadLinkUpdate": "https://github.com/guanyintu/q-dan-fei-fei-dalamud/releases/download/v0.1.7/latest.zip",
-    "DownloadLinkTesting": "https://github.com/guanyintu/q-dan-fei-fei-dalamud/releases/download/v0.1.7/latest.zip",
-    "LastUpdate": 1794502080
+    "DownloadLinkInstall": "https://github.com/guanyintu/q-dan-fei-fei-dalamud/releases/download/v0.1.8/latest.zip",
+    "DownloadLinkUpdate": "https://github.com/guanyintu/q-dan-fei-fei-dalamud/releases/download/v0.1.8/latest.zip",
+    "DownloadLinkTesting": "https://github.com/guanyintu/q-dan-fei-fei-dalamud/releases/download/v0.1.8/latest.zip",
+    "LastUpdate": 1794568803
   }
 ]
