@@ -18,7 +18,7 @@ https://raw.githubusercontent.com/guanyintu/q-dan-fei-fei-dalamud/main/repo.json
 
 For manual development loading, extract `latest.zip` and add the full path to `q弹狒狒.dll` under Dev Plugin Locations. Keep its dependencies and `Assets` folder together. Run `/qbounce` and enable the effect; it starts disabled.
 
-Version **0.1.7** targets Dalamud API 15 / .NET 10, validated against CN Dalamud 15.0.4.0 and game 2026.11.03.0000.0000. Release files are the official DalamudPackager output: `latest.zip` and the plugin manifest (GitHub download name `manifest.json`).
+Version **0.1.8** targets Dalamud API 15 / .NET 10, validated against CN Dalamud 15.0.4.0 and game 2026.11.03.0000.0000. Release files are the official DalamudPackager output: `latest.zip` and the plugin manifest (GitHub download name `manifest.json`).
 
 ## Language and controls
 
@@ -35,3 +35,9 @@ Default strength: 0.4; period: 0.45 seconds. Loaded players, NPCs and monsters b
 Install .NET 10 SDK and matching API 15 Dalamud, then run `./build.ps1 -DalamudPath <Dalamud directory>`. The script builds, tests, validates and copies the SDK's original `latest.zip` and manifest without rebuilding the archive. See [validation](docs/VALIDATION.md) and [technical notes](docs/TECHNICAL-NOTES.md).
 
 The effect changes render scale only. Cutscenes, loading and GPose pause it. If a model remains distorted, disable the effect, then change zones or log in again. Compilation, package checks and automated tests do not replace in-game validation of all models, attachments or long sessions.
+
+## Model rotation
+
+Enable the main switch, then Rotate model only. Defaults: off, 90 deg/s. Range: -720 to 720 deg/s; signed speed reverses direction and 0 holds the current angle. Set strength to 0 for rotation only. Speed changes preserve the angle; F8 resets its phase.
+
+Only the render-root quaternion is changed; gameplay facing, position, movement and combat data are untouched. Both effects share the actor scope. Disabling restores the owned offset and preserves external changes. In-game model and attachment compatibility remains unverified.

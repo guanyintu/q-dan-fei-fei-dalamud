@@ -24,6 +24,9 @@ internal sealed class ConfigWindow(Plugin plugin) : Window("q弹狒狒###QBounce
         changed |= ImGui.SliderFloat(T(TextId.Amplitude), ref c.Amplitude, 0, .6f, "%.2f");
         changed |= ImGui.SliderFloat(T(TextId.Period), ref c.Period, .2f, 1.5f, "%.2f");
         changed |= ImGui.Checkbox(T(TextId.RandomPhase), ref c.RandomPhase);
+        changed |= ImGui.Checkbox(T(TextId.Rotate), ref c.Rotate);
+        changed |= ImGui.SliderFloat(T(TextId.RotationSpeed), ref c.RotationSpeed, -720, 720, "%.0f");
+        ImGui.TextWrapped(T(TextId.RotationHint));
         ImGui.Separator();
         ImGui.TextUnformatted(T(TextId.Scope));
         changed |= ImGui.Checkbox(T(TextId.Self), ref c.AffectSelf);

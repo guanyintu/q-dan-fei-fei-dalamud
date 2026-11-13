@@ -18,7 +18,7 @@ https://raw.githubusercontent.com/guanyintu/q-dan-fei-fei-dalamud/main/repo.json
 
 手動開發載入：解壓縮 `latest.zip`，在 Dev Plugin Locations 加入 `q弹狒狒.dll` 的完整路徑，保留相依 DLL 和 `Assets` 資料夾。輸入 `/qbounce` 並開啟效果；初始狀態為關閉。
 
-版本 **0.1.7** 使用 Dalamud API 15 / .NET 10，本次對照國服 Dalamud 15.0.4.0 與遊戲 2026.11.03.0000.0000。發布內容由官方 DalamudPackager 產生：`latest.zip` 和外掛清單（GitHub 附件下載名為 `manifest.json`）。
+版本 **0.1.8** 使用 Dalamud API 15 / .NET 10，本次對照國服 Dalamud 15.0.4.0 與遊戲 2026.11.03.0000.0000。發布內容由官方 DalamudPackager 產生：`latest.zip` 和外掛清單（GitHub 附件下載名為 `manifest.json`）。
 
 ## 語言與操作
 
@@ -35,3 +35,9 @@ https://raw.githubusercontent.com/guanyintu/q-dan-fei-fei-dalamud/main/repo.json
 安裝 .NET 10 SDK 和相符的 API 15 Dalamud，執行 `./build.ps1 -DalamudPath <衛月目錄>`。腳本會編譯、測試及檢查發布包，直接複製 SDK 產物，不會自行重新壓縮 ZIP。詳細內容請見 [驗收報告](docs/VALIDATION.md) 和 [技術說明](docs/TECHNICAL-NOTES.md)。
 
 只修改渲染比例；過場、載入和 GPose 會暫停。若模型仍然變形，請停用效果後切換區域或重新登入。編譯及自動化測試無法取代所有模型、裝備附著與長時間執行的實機驗證。
+
+## 模型旋轉
+
+開啟總開關後勾選「僅旋轉模型」。預設關閉，速度預設 90 度/秒，可調 -720～720。正負控制方向，0 保持目前角度；強度 0 可只旋轉。調速不跳動角度，F8 重設節奏。
+
+只寫渲染根節點的四元數，不寫人物邏輯朝向、位置、移動或戰鬥資料。兩種效果共用角色範圍。關閉時撤回自己的偏移，保留其他外掛的新朝向。實機模型與裝備相容性仍待確認。

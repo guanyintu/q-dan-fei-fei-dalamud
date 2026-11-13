@@ -12,6 +12,7 @@ public sealed class ActorTests
         public int Capacity => 32;
         public readonly Dictionary<int, ActorSnapshot> Actors = [];
         public readonly Dictionary<int, Vector3> Scales = [];
+        public readonly Dictionary<int, Quaternion> Rotations = [];
         public int Writes;
         public bool RejectWrites;
         public ActorSnapshot Add(int slot, uint entity = 1, ActorGroup group = ActorGroup.Npc, nint draw = 500)
@@ -19,6 +20,7 @@ public sealed class ActorTests
             var actor = new ActorSnapshot(new(slot, 100 + slot, entity, 20, 30, 40, 3, 200, draw, 600, 700, 800), group, entity, 900);
             Actors[slot] = actor;
             Scales[slot] = new Vector3(1.2f, 1.5f, .9f);
+            Rotations[slot] = Quaternion.CreateFromYawPitchRoll(.7f, .2f, -.1f);
             return actor;
         }
         public bool TryGet(int index, out ActorSnapshot snapshot) => Actors.TryGetValue(index, out snapshot);
@@ -31,6 +33,16 @@ public sealed class ActorTests
         {
             if (RejectWrites || !TryReadScale(snapshot, out _)) return false;
             Writes++; Scales[snapshot.Identity.Index] = scale; return true;
+        }
+        public bool TryReadRotation(in ActorSnapshot snapshot, out Quaternion rotation)
+        {
+            rotation = default;
+            return TryReadScale(snapshot, out _) && Rotations.TryGetValue(snapshot.Identity.Index, out rotation) && OwnedRotation.Valid(rotation);
+        }
+        public bool TryWriteRotation(in ActorSnapshot snapshot, Quaternion rotation)
+        {
+            if (RejectWrites || !TryReadRotation(snapshot, out _)) return false;
+            Rotations[snapshot.Identity.Index] = rotation; return true;
         }
     }
 

@@ -6,7 +6,8 @@ public enum ActorGroup { Self, Player, Npc, Monster }
 
 // An address alone is never an actor identity. Include the model/skeleton and native vtables.
 public readonly record struct ActorIdentity(int Index, nint Address, uint EntityId, uint BaseId,
-    uint LayoutId, uint OwnerId, byte Kind, nint VTable, nint Draw, nint DrawVTable, nint Skeleton, int ModelId);
+    uint LayoutId, uint OwnerId, byte Kind, nint VTable, nint Draw, nint DrawVTable, nint Skeleton, int ModelId,
+    nint Parent = 0, nint ParentVTable = 0);
 public readonly record struct ActorSnapshot(ActorIdentity Identity, ActorGroup Group, ulong PhaseKey, nint UpdateFunction);
 
 public interface IActorAccess
@@ -15,10 +16,14 @@ public interface IActorAccess
     bool TryGet(int index, out ActorSnapshot snapshot);
     bool TryReadScale(in ActorSnapshot snapshot, out Vector3 scale);
     bool TryWriteScale(in ActorSnapshot snapshot, Vector3 scale);
+    bool TryReadRotation(in ActorSnapshot snapshot, out Quaternion rotation) { rotation = default; return false; }
+    bool TryWriteRotation(in ActorSnapshot snapshot, Quaternion rotation) => false;
+    bool TryWriteTransform(in ActorSnapshot snapshot, Vector3 scale, Quaternion? rotation) =>
+        TryWriteScale(snapshot, scale) && (rotation == null || TryWriteRotation(snapshot, rotation.Value));
 }
 
 public readonly record struct BounceSettings(float Amplitude, float Period, bool RandomPhase,
-    bool Self, bool Players, bool Npcs, bool Monsters)
+    bool Self, bool Players, bool Npcs, bool Monsters, bool Rotate = false, float RotationSpeed = 90)
 {
     public bool Includes(ActorGroup group) => group switch
     {
@@ -36,6 +41,7 @@ public sealed class ActorManager(IActorAccess access)
         public Vector3 LastWritten;
         public bool OwnsScale;
         public long AppliedFrame = -1;
+        public OwnedRotation Rotation;
     }
 
     private readonly Entry?[] entries = new Entry?[access.Capacity];
@@ -43,6 +49,8 @@ public sealed class ActorManager(IActorAccess access)
     private long frame;
     private double seconds;
     private BounceSettings settings;
+    private readonly RotationClock rotationClock = new();
+    private Quaternion rotationOffset = Quaternion.Identity;
     public int TrackedCount { get; private set; }
     public int ProcessedCount { get; private set; }
 
@@ -50,6 +58,7 @@ public sealed class ActorManager(IActorAccess access)
     {
         seconds = elapsed;
         settings = options;
+        rotationOffset = rotationClock.Advance(elapsed, options.RotationSpeed, options.Rotate);
         ProcessedCount = 0;
         frame++;
         // Active entries are revalidated every frame. Empty slots are discovered in a rolling scan.
@@ -99,7 +108,10 @@ public sealed class ActorManager(IActorAccess access)
         entry.LastWritten = scale;
         // Mark ownership first so recovery can undo a write even if transform notification throws.
         entry.OwnsScale = true;
-        if (!access.TryWriteScale(entry.Actor, scale)) entry.OwnsScale = false;
+        Quaternion? rotation = null;
+        if (settings.Rotate && access.TryReadRotation(entry.Actor, out var currentRotation) && OwnedRotation.Valid(currentRotation))
+            rotation = entry.Rotation.Apply(currentRotation, rotationOffset);
+        if (!access.TryWriteTransform(entry.Actor, scale, rotation)) { entry.OwnsScale = false; entry.Rotation.Owned = false; }
         else if (entry.AppliedFrame != frame)
         {
             entry.AppliedFrame = frame;
@@ -109,14 +121,18 @@ public sealed class ActorManager(IActorAccess access)
 
     private void Restore(Entry entry)
     {
-        if (!entry.OwnsScale) return;
+        if (!entry.OwnsScale && !entry.Rotation.Owned) return;
         // Compare-and-restore: an external writer's new scale takes precedence.
         if (access.TryReadScale(entry.Actor, out var current))
         {
-            var restored = RemoveOwnedComponents(current, entry);
-            if (current != restored) access.TryWriteScale(entry.Actor, restored);
+            var restored = entry.OwnsScale ? RemoveOwnedComponents(current, entry) : current;
+            Quaternion? rotation = null;
+            if (entry.Rotation.Owned && access.TryReadRotation(entry.Actor, out var currentRotation) && OwnedRotation.Valid(currentRotation))
+                rotation = entry.Rotation.WithoutOwn(currentRotation);
+            if (current != restored || rotation != null) access.TryWriteTransform(entry.Actor, restored, rotation);
         }
         entry.OwnsScale = false;
+        entry.Rotation.Owned = false;
     }
 
     private static Vector3 RemoveOwnedComponents(Vector3 current, Entry entry) => new(
@@ -136,6 +152,7 @@ public sealed class ActorManager(IActorAccess access)
         }
         TrackedCount = ProcessedCount = scanCursor = 0;
         frame = 0;
+        rotationClock.Reset();
         if (errors != null) throw new AggregateException("部分模型无法恢复，请切图或重新登录。", errors);
     }
 }

@@ -20,6 +20,8 @@ public sealed class Configuration : IPluginConfiguration
     public string AudioPath = "";
     public bool HotkeysEnabled;
     public string UiLanguage = "auto";
+    public bool Rotate;
+    public float RotationSpeed = 90;
 
     public void Normalize()
     {
@@ -28,7 +30,8 @@ public sealed class Configuration : IPluginConfiguration
         Volume = float.IsFinite(Volume) ? Math.Clamp(Volume, 0, 1) : .35f;
         AudioPath ??= "";
         UiLanguage = Localization.NormalizePreference(UiLanguage);
+        RotationSpeed = float.IsFinite(RotationSpeed) ? Math.Clamp(RotationSpeed, -720, 720) : 90;
     }
 
-    public BounceSettings Settings => new(Amplitude, Period, RandomPhase, AffectSelf, AffectPlayers, AffectNpcs, AffectMonsters);
+    public BounceSettings Settings => new(Amplitude, Period, RandomPhase, AffectSelf, AffectPlayers, AffectNpcs, AffectMonsters, Rotate, RotationSpeed);
 }

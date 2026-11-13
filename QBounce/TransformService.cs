@@ -57,7 +57,8 @@ public sealed unsafe class TransformService(IObjectTable objects, IFramework fra
         var character = (Character*)actor;
         var id = new ActorIdentity(index, address, actor->EntityId, actor->BaseId, actor->LayoutId, actor->OwnerId,
             (byte)actor->ObjectKind, (nint)actor->VirtualTable, (nint)draw, (nint)draw->VirtualTable,
-            (nint)model->Skeleton, character->ModelContainer.ModelCharaId);
+            (nint)model->Skeleton, character->ModelContainer.ModelCharaId,
+            (nint)draw->ParentObject, draw->ParentObject == null ? 0 : (nint)draw->ParentObject->VirtualTable);
         var key = ((ulong)actor->EntityId << 32) ^ actor->BaseId ^ ((ulong)(uint)index << 16) ^ actor->LayoutId;
         snapshot = new(id, group, key, (nint)actor->VirtualTable->Update);
         rejection = ActorRejection.None;
@@ -98,14 +99,33 @@ public sealed unsafe class TransformService(IObjectTable objects, IFramework fra
     }
 
     public bool TryWriteScale(in ActorSnapshot snapshot, Vector3 scale)
+        => TryWriteTransform(snapshot, scale, null);
+
+    public bool TryReadRotation(in ActorSnapshot snapshot, out Quaternion rotation)
     {
-        if (!BounceEngine.ValidScale(scale) || !Validate(snapshot, out var draw)) return false;
-        if (draw->Scale.X == scale.X && draw->Scale.Y == scale.Y && draw->Scale.Z == scale.Z) return true;
+        rotation = default;
+        if (!Validate(snapshot, out var draw)) return false;
+        rotation = draw->Rotation;
+        return OwnedRotation.Valid(rotation);
+    }
+
+    public bool TryWriteRotation(in ActorSnapshot snapshot, Quaternion rotation)
+    {
+        if (!TryReadScale(snapshot, out var scale)) return false;
+        return TryWriteTransform(snapshot, scale, rotation);
+    }
+
+    public bool TryWriteTransform(in ActorSnapshot snapshot, Vector3 scale, Quaternion? rotation)
+    {
+        if (!BounceEngine.ValidScale(scale) || (rotation.HasValue && !OwnedRotation.Valid(rotation.Value)) || !Validate(snapshot, out var draw)) return false;
+        if (draw->Scale.X == scale.X && draw->Scale.Y == scale.Y && draw->Scale.Z == scale.Z &&
+            (rotation == null || (Quaternion)draw->Rotation == rotation.Value)) return true;
         // World Y is up. Only the render root's scale changes: position and gameplay data stay intact.
         // Equipment/hair models use this CharacterBase skeleton; attached weapons follow its transforms.
         draw->Scale.X = scale.X;
         draw->Scale.Y = scale.Y;
         draw->Scale.Z = scale.Z;
+        if (rotation.HasValue) draw->Rotation = rotation.Value;
         draw->NotifyTransformChanged();
         return true;
     }

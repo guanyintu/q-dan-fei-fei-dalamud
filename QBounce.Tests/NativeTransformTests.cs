@@ -43,6 +43,7 @@ public unsafe sealed class NativeTransformTests : IDisposable
         Draw->LoadState = 3;
         Draw->Scale.X = Draw->Scale.Y = Draw->Scale.Z = 1;
         Draw->Position.Y = 12;
+        Draw->Rotation = Quaternion.Identity;
         model->Skeleton = (FFXIVClientStructs.FFXIV.Client.Graphics.Render.Skeleton*)9876;
         liveAddress = (nint)Actor;
         var objects = Proxy.Create<IObjectTable>((method, _) => method.Name switch
@@ -96,6 +97,25 @@ public unsafe sealed class NativeTransformTests : IDisposable
         Assert.Equal(previous + 1, notifications); Assert.True(Draw->IsTransformChanged);
         Assert.Equal(1.25f, Actor->Scale); Assert.Equal(2, Actor->HitboxRadius);
         Assert.Equal(12, Actor->Position.Y); Assert.Equal(12, Draw->Position.Y);
+    }
+
+    [Fact]
+    public void RotationWritesOnlyRenderQuaternionAndBatchesTransformNotification()
+    {
+        Assert.Equal((nint)0x60, Marshal.OffsetOf<FFXIVClientStructs.FFXIV.Client.Graphics.Scene.Object>("Rotation"));
+        Actor->Rotation = 1.1f;
+        Assert.True(service.TryGet(0, out var snapshot));
+        var before = notifications;
+        var rotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, 1.2f);
+        Assert.True(service.TryWriteTransform(snapshot, new Vector3(.8f,1.4f,.8f), rotation));
+        Assert.Equal(before + 1, notifications);
+        Assert.True(service.TryReadRotation(snapshot, out var actual)); Assert.Equal(rotation, actual);
+        Assert.Equal(1.1f, Actor->Rotation); Assert.Equal(12, Actor->Position.Y); Assert.Equal(12, Draw->Position.Y);
+        Assert.Equal(1.25f, Actor->Scale); Assert.Equal(2, Actor->HitboxRadius);
+        Assert.False(service.TryWriteRotation(snapshot, default));
+        Assert.False(service.TryWriteRotation(snapshot, new Quaternion(float.NaN,0,0,1)));
+        liveAddress = 0; Assert.False(service.TryWriteRotation(snapshot, Quaternion.Identity));
+        Assert.Equal(rotation, (Quaternion)Draw->Rotation);
     }
 
     [Fact]

@@ -12,7 +12,7 @@
 
 **卫月版会更流畅一些，已有卫月建议优先使用本版本。** [独立版](https://github.com/guanyintu/q-dan-fei-fei-standalone/releases/latest) 无需卫月，下载 EXE 即可运行。
 
-**构建已通过；完整模型效果验收仍见测试报告。** 当前版本 **0.1.7** 针对国服 Dalamud **15.0.4.0 / API 15 / .NET 10**，游戏版本 **2026.11.03.0000.0000**。构建时从实际引用的 Dalamud `version.json` 生成 manifest 适用版本，并检查清单与目标运行时一致；不会使用 `any` 跳过版本限制。
+**构建已通过；完整模型效果验收仍见测试报告。** 当前版本 **0.1.8** 针对国服 Dalamud **15.0.4.0 / API 15 / .NET 10**，游戏版本 **2026.11.03.0000.0000**。构建时从实际引用的 Dalamud `version.json` 生成 manifest 适用版本，并检查清单与目标运行时一致；不会使用 `any` 跳过版本限制。
 
 0.1.6 将项目名、主文件和界面名称统一为“q弹狒狒”，作者为 someboy。0.1.1 修复版本上限导致的加载失败，0.1.2 修复场景父节点过滤，0.1.3 加入默认音乐，0.1.5 取消额外音频压缩。
 
@@ -77,8 +77,14 @@ IFramework.Update 负责共享 Stopwatch 时钟、恢复与对象管理；由于
 ./build.ps1 -DalamudPath "$env:APPDATA\XIVLauncherCN\addon\Hooks\15.0.4.0"
 ```
 
-脚本优先使用本工作区 `.tools/dotnet/dotnet.exe`（如存在），其次使用系统 SDK；NuGet 版本已锁定。未指定 DalamudPath 时，优先使用 DALAMUD_HOME，否则自动选择已安装的最新 API 15 运行时。自动构建、检查目标版本、运行测试，并原样复制官方 Packager 产物到 `dist/q弹狒狒-卫月版-0.1.7/`；可用 `-GameVersionFile` 指定游戏安装目录中的 `ffxivgame.ver`，同时核验实际游戏版本。测试包括无游戏依赖的数学／生命周期、使用本机结构 DLL 的自有原生内存夹具，以及 Windows 音频设备的静音 WAV／MP3 播放测试；后者需要 Windows 音频输出与 Media Foundation 编解码器。
+脚本优先使用本工作区 `.tools/dotnet/dotnet.exe`（如存在），其次使用系统 SDK；NuGet 版本已锁定。未指定 DalamudPath 时，优先使用 DALAMUD_HOME，否则自动选择已安装的最新 API 15 运行时。自动构建、检查目标版本、运行测试，并原样复制官方 Packager 产物到 `dist/q弹狒狒-卫月版-0.1.8/`；可用 `-GameVersionFile` 指定游戏安装目录中的 `ffxivgame.ver`，同时核验实际游戏版本。测试包括无游戏依赖的数学／生命周期、使用本机结构 DLL 的自有原生内存夹具，以及 Windows 音频设备的静音 WAV／MP3 播放测试；后者需要 Windows 音频输出与 Media Foundation 编解码器。
 
-本次 Release 构建 0 warning / 0 error，59 项测试通过、0 失败、0 跳过。结果见 [验收报告](docs/VALIDATION.md)，结构版本与时序依据见 [技术核查](docs/TECHNICAL-NOTES.md)。**编译成功、内存夹具测试通过和音乐设备测试通过均不代表所有游戏内模型效果已验证。**
+本次 Release 构建 0 warning / 0 error，64 项测试通过、0 失败、0 跳过。结果见 [验收报告](docs/VALIDATION.md)，结构版本与时序依据见 [技术核查](docs/TECHNICAL-NOTES.md)。**编译成功、内存夹具测试通过和音乐设备测试通过均不代表所有游戏内模型效果已验证。**
 
 
+
+## 模型旋转（0.1.8）
+
+开启总开关后勾选「仅旋转模型」。默认关闭，速度默认 90 度/秒；可调 -720～720，正负控制方向，0 保持当前角度。强度为 0 时可只旋转模型。调速保持角度连续；F8 同时重置旋转节奏。
+
+只写渲染根节点的 Rotation 四元数，不写角色逻辑朝向、位置、速度或战斗数据。旋转与 Q 弹共用角色范围。关闭旋转、总开关、切图或卸载时撤回自己的偏移，保留其他插件的新朝向。实机模型、装备传播和动作兼容仍待验证。
